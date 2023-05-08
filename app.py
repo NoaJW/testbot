@@ -1,6 +1,7 @@
 from flask import Flask, request
 import telegram
 import os
+import re
 from sgchattingbot.credentials import bot_token, bot_user_name, URL
 
 global bot
@@ -73,7 +74,7 @@ def index():
 if __name__ == '__main__':
     # note the threaded arg which allow
     # your app to have more than one thread
-    app.run(host='0.0.0.0', threaded=True)
+    app.run(threaded=True)
 
     
 
