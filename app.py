@@ -14,7 +14,7 @@ bot = telegram.Bot(token=TOKEN)
 app = Flask(__name__)
 
 
-@app.route('/6207929876:AAGLcN0irRbfZFi27b7jFEDJfUprStJPy6M', methods=['POST'])   # POST to /{token}
+@app.route('/{}'.format(TOKEN), methods=['POST'])   # POST to /{token}
 def test_token():
     return "okok"
 
