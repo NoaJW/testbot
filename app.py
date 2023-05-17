@@ -1,6 +1,6 @@
 from flask import Flask, request
 import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, filters
 import os
 import re
 from sgchattingbot.credentials import bot_token, bot_user_name, URL
@@ -24,7 +24,9 @@ def echo(update, context):
 
 # Create the handlers
 start_handler = CommandHandler('start', start)
-echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
+# echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
+echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
+
 
 # Create updater
 updater = Updater(token=bot, use_context=True)
