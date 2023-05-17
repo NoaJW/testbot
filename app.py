@@ -105,6 +105,7 @@ async def unset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 def main() -> None:
     """Run bot."""
+    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXxxx")
     # Create the Application and pass it your bot's token.
     application = Application.builder().token("6207929876:AAGLcN0irRbfZFi27b7jFEDJfUprStJPy6M").build()
 
