@@ -53,6 +53,10 @@ def respond():
 
     return 'ok'
 
+@app.route('/6207929876:AAGLcN0irRbfZFi27b7jFEDJfUprStJPy6M', methods=['POST'])   # POST to /{token}
+def test_token():
+    return "okok"
+
 
 @app.route('/setwebhook', methods=['GET', 'POST'])
 def set_webhook():
