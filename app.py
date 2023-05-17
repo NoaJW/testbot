@@ -29,7 +29,7 @@ echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
 
 
 # Create updater
-updater = Updater(token=bot, use_context=True)
+updater = Updater(TOKEN, use_context=True)
 
 # Register handlers with the Dispatcher of the Updater 
 dispatcher = updater.dispatcher
