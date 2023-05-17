@@ -18,9 +18,6 @@ app = Flask(__name__)
 @app.route('/{}'.format(TOKEN), methods=['POST'])   # POST to /{token}
 def respond():
     print("HIT")
-    print(request.get_json(force=True))
-    print("request")
-    print(request)
     # retrieve the message in JSON and then transform it to Telegram object
     update = telegram.Update.de_json(request.get_json(force=True), bot)
 
@@ -62,6 +59,7 @@ def respond():
 
 @app.route('/setwebhook', methods=['GET', 'POST'])
 def set_webhook():
+    print("HIT")
     # we use the bot object to link the bot to our app which live
     # in the link provided by URL
     s = bot.setWebhook('{URL}{HOOK}'.format(URL=URL, HOOK=TOKEN))
