@@ -1,122 +1,47 @@
-#!/usr/bin/env python
-# pylint: disable=unused-argument, wrong-import-position
-# This program is dedicated to the public domain under the CC0 license.
+import os
 
-"""
-Simple Bot to send timed Telegram messages.
+import telebot
 
-This Bot uses the Application class to handle the bot and the JobQueue to send
-timed messages.
+from utils import get_daily_horoscope
 
-First, a few handler functions are defined. Then, those functions are passed to
-the Application and registered at their respective places.
-Then, the bot is started and runs until we press Ctrl-C on the command line.
+BOT_TOKEN = "6207929876:AAGLcN0irRbfZFi27b7jFEDJfUprStJPy6M"
 
-Usage:
-Basic Alarm Bot example, sends a message after a set time.
-Press Ctrl-C on the command line or send a signal to the process to stop the
-bot.
-
-Note:
-To use the JobQueue, you must install PTB via
-`pip install python-telegram-bot[job-queue]`
-"""
-
-import logging
-
-from telegram import __version__ as TG_VER
-
-try:
-    from telegram import __version_info__
-except ImportError:
-    __version_info__ = (0, 0, 0, 0, 0)  # type: ignore[assignment]
-
-if __version_info__ < (20, 0, 0, "alpha", 1):
-    raise RuntimeError(
-        f"This example is not compatible with your current PTB version {TG_VER}. To view the "
-        f"{TG_VER} version of this example, "
-        f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
-    )
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
-
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
+bot = telebot.TeleBot(BOT_TOKEN)
 
 
-# Define a few command handlers. These usually take the two arguments update and
-# context.
-# Best practice would be to replace context with an underscore,
-# since context is an unused local variable.
-# This being an example and not having context present confusing beginners,
-# we decided to have it present as context.
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Sends explanation on how to use the bot."""
-    await update.message.reply_text("Hi! Use /set <seconds> to set a timer")
+@bot.message_handler(commands=['start', 'hello'])
+def send_welcome(message):
+    bot.reply_to(message, "Howdy, how are you doing?")
 
 
-async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send the alarm message."""
-    job = context.job
-    await context.bot.send_message(job.chat_id, text=f"Beep! {job.data} seconds are over!")
+@bot.message_handler(commands=['horoscope'])
+def sign_handler(message):
+    text = "What's your zodiac sign?\nChoose one: *Aries*, *Taurus*, *Gemini*, *Cancer,* *Leo*, *Virgo*, *Libra*, *Scorpio*, *Sagittarius*, *Capricorn*, *Aquarius*, and *Pisces*."
+    sent_msg = bot.send_message(message.chat.id, text, parse_mode="Markdown")
+    bot.register_next_step_handler(sent_msg, day_handler)
 
 
-def remove_job_if_exists(name: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
-    """Remove job with given name. Returns whether job was removed."""
-    current_jobs = context.job_queue.get_jobs_by_name(name)
-    if not current_jobs:
-        return False
-    for job in current_jobs:
-        job.schedule_removal()
-    return True
+def day_handler(message):
+    sign = message.text
+    text = "What day do you want to know?\nChoose one: *TODAY*, *TOMORROW*, *YESTERDAY*, or a date in format YYYY-MM-DD."
+    sent_msg = bot.send_message(
+        message.chat.id, text, parse_mode="Markdown")
+    bot.register_next_step_handler(
+        sent_msg, fetch_horoscope, sign.capitalize())
 
 
-async def set_timer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Add a job to the queue."""
-    chat_id = update.effective_message.chat_id
-    try:
-        # args[0] should contain the time for the timer in seconds
-        due = float(context.args[0])
-        if due < 0:
-            await update.effective_message.reply_text("Sorry we can not go back to future!")
-            return
-
-        job_removed = remove_job_if_exists(str(chat_id), context)
-        context.job_queue.run_once(alarm, due, chat_id=chat_id, name=str(chat_id), data=due)
-
-        text = "Timer successfully set!"
-        if job_removed:
-            text += " Old one was removed."
-        await update.effective_message.reply_text(text)
-
-    except (IndexError, ValueError):
-        await update.effective_message.reply_text("Usage: /set <seconds>")
+def fetch_horoscope(message, sign):
+    day = message.text
+    horoscope = get_daily_horoscope(sign, day)
+    data = horoscope["data"]
+    horoscope_message = f'*Horoscope:* {data["horoscope_data"]}\n*Sign:* {sign}\n*Day:* {data["date"]}'
+    bot.send_message(message.chat.id, "Here's your horoscope!")
+    bot.send_message(message.chat.id, horoscope_message, parse_mode="Markdown")
 
 
-async def unset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Remove the job if the user changed their mind."""
-    chat_id = update.message.chat_id
-    job_removed = remove_job_if_exists(str(chat_id), context)
-    text = "Timer successfully cancelled!" if job_removed else "You have no active timer."
-    await update.message.reply_text(text)
+@bot.message_handler(func=lambda msg: True)
+def echo_all(message):
+    bot.reply_to(message, message.text)
 
 
-def main() -> None:
-    """Run bot."""
-    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXxxx")
-    # Create the Application and pass it your bot's token.
-    application = Application.builder().token("6207929876:AAGLcN0irRbfZFi27b7jFEDJfUprStJPy6M").build()
-
-    # on different commands - answer in Telegram
-    application.add_handler(CommandHandler(["start", "help"], start))
-    application.add_handler(CommandHandler("set", set_timer))
-    application.add_handler(CommandHandler("unset", unset))
-
-    # Run the bot until the user presses Ctrl-C
-    application.run_polling()
-
-
-if __name__ == "__main__":
-    main()
+bot.infinity_polling()
