@@ -1,7 +1,7 @@
 from telegram.ext import CommandHandler, Updater
 from logging import basicConfig, getLogger, INFO
 
-BOT_TOKEN = "6207929876:AAGLcN0irRbfZFi27b7jFEDJfUprStJPy6M"
+BOT_TOKEN = "6207929876:AAF6QVdvg8SwscPh1gbd_BwE2rqX0re-L3g"
 
 basicConfig(level=INFO)
 log = getLogger()
