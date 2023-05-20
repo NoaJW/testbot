@@ -1,5 +1,6 @@
 from telegram.ext import CommandHandler, Updater
 from logging import basicConfig, getLogger, INFO
+import waitress
 
 BOT_TOKEN = "6207929876:AAF6QVdvg8SwscPh1gbd_BwE2rqX0re-L3g"
 
@@ -27,5 +28,17 @@ def main():
     dispatcher.add_handler(help_handler)
     updater.start_polling()
 
-if __name__ == '__main__':
+
+def application(environ, start_response):
+    # Your WSGI application logic here
     main()
+
+    # Set the response status and headers
+    status = '200 OK'
+    headers = [('Content-Type', 'text/plain')]
+
+    # Start the response using the start_response callable
+    start_response(status, headers)
+
+# if __name__ == '__main__':
+#     waitress.serve(application, host='0.0.0.0', port=8080)
