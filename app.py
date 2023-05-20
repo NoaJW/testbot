@@ -40,5 +40,5 @@ def application(environ, start_response):
     # Start the response using the start_response callable
     start_response(status, headers)
 
-# if __name__ == '__main__':
-#     waitress.serve(application, host='0.0.0.0', port=8080)
+if __name__ == '__main__':
+    waitress.serve(application, host='0.0.0.0', port=8080)
