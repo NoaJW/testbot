@@ -9,13 +9,13 @@ BOT_TOKEN = "6207929876:AAF6QVdvg8SwscPh1gbd_BwE2rqX0re-L3g"
 basicConfig(level=INFO)
 log = getLogger()
 
-async def start(update, context):
-    await update.message.reply_text(
+def start(update, context):
+    update.message.reply_text(
         "start this bot",
         parse_mode="markdown")
 
-async def help(update, context):
-    await update.message.reply_text(
+def help(update, context):
+    update.message.reply_text(
         "help for this bot",
         parse_mode="markdown")
 
