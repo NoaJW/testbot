@@ -1,59 +1,51 @@
-from telegram.ext import CommandHandler, Updater
-from telegram.ext import Application, CommandHandler, ContextTypes
-
-from logging import basicConfig, getLogger, INFO
-import waitress
-
-BOT_TOKEN = "6207929876:AAF6QVdvg8SwscPh1gbd_BwE2rqX0re-L3g"
-
-basicConfig(level=INFO)
-log = getLogger()
-
-async def start(update, context):
-    await update.message.reply_text(
-        "start this bot",
-        parse_mode="markdown")
-
-async def help(update, context):
-    await update.message.reply_text(
-        "help for this bot",
-        parse_mode="markdown")
-
-def main():
-    # updater = Updater(token=BOT_TOKEN, use_context=True)
-    # dispatcher = updater.dispatcher
-
-    # start_handler = CommandHandler("start", start)
-    # help_handler = CommandHandler("help", help)
-
-    # dispatcher.add_handler(start_handler)
-    # dispatcher.add_handler(help_handler)
-    # updater.start_polling()
-
-    application = Application.builder().token("6207929876:AAF6QVdvg8SwscPh1gbd_BwE2rqX0re-L3g").build()
-
-    # on different commands - answer in Telegram
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help))
-
-    # Run the bot until the user presses Ctrl-C
-    application.run_polling()
+from flask import Flask, request
+import telegram
+from sgchattingbot.credentials import bot_token, bot_user_name,URL
 
 
 
+global bot
+global TOKEN
+TOKEN = bot_token
+bot = telegram.Bot(token=TOKEN)
 
-# def application(environ, start_response):
-#     # Your WSGI application logic here
-#     main()
+app = Flask(__name__)
 
-#     # Set the response status and headers
-#     status = '200 OK'
-#     headers = [('Content-Type', 'text/plain')]
+def get_response(msg):
+    """
+    you can place your mastermind AI here
+    """
+    return "معلش !"
 
-#     # Start the response using the start_response callable
-#     start_response(status, headers)
+@app.route('/{}'.format(TOKEN), methods=['POST'])
+def respond():
+    # retrieve the message in JSON and then transform it to Telegram object
+    update = telegram.Update.de_json(request.get_json(force=True), bot)
+
+    chat_id = update.message.chat.id
+    msg_id = update.message.message_id
+
+    # Telegram understands UTF-8, so encode text for unicode compatibility
+    text = update.message.text.encode('utf-8').decode()
+    print("got text message :", text)
+
+    response = get_response(text)
+    bot.sendMessage(chat_id=chat_id, text=response, reply_to_message_id=msg_id)
+
+    return 'ok'
+
+@app.route('/set_webhook', methods=['GET', 'POST'])
+def set_webhook():
+    s = bot.setWebhook('{URL}{HOOK}'.format(URL=URL, HOOK=TOKEN))
+    if s:
+        return "webhook setup ok"
+    else:
+        return "webhook setup failed"
+
+@app.route('/')
+def index():
+    return 'main'
+
 
 if __name__ == '__main__':
-    main()
-
-    # waitress.serve(application, host='0.0.0.0', port=8080)
+    app.run(threaded=True)
